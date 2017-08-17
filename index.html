@@ -25,8 +25,12 @@
         $('#message').val('');
         return false;
       });
-      socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+      socket.on('chat message', function(from, msg){
+        var li = $('<li>');
+        var alias = $('<span>').text('[' + from + ']: ').css('color', 'blue');
+        var text = $('<span>').text(msg);
+        li.append(alias).append(text);
+        $('#messages').append(li);
       });
 
       $('#nickname').blur(function(){

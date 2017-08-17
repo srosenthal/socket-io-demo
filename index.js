@@ -9,30 +9,44 @@ app.get('/', function(req, res){
 var aliases = {};
 
 var i = 1;
-function randomName() {
-  var name = 'Duder #' + i;
+function randomAlias() {
+  var name = 'Dude #' + i;
   i = i + 1;
   return name;
 }
 
 io.on('connection', function(socket){
-  var alias = aliases[socket.id] = randomName();
-  console.log('user connected: ' + alias);
+  var assignedAlias = randomAlias();
+  aliases[socket.id] = assignedAlias;
+
+  var text = assignedAlias + ' has joined the server';
+  console.log(text);
+  io.emit('chat message', 'Server', text);
 
   // Confirm the current alias to the client
-  socket.emit('alias', alias);
+  socket.emit('alias', assignedAlias);
 
-  socket.on('name change', function(msg){
-    var alias = aliases[socket.id];
-    console.log('name change from ' + alias + ': ' + msg);
-    aliases[socket.id] = msg;
-    io.emit('name change', msg);
+  socket.on('name change', function(newAlias){
+    var oldAlias = aliases[socket.id];
+    if (newAlias === 'Server' || newAlias === oldAlias) {
+      // The name Server is reserved, so users can't use it.
+      // We could also prevent users from using the same name as someone else.
+      newAlias = oldAlias;
+    } else {
+      var text = oldAlias + ' is now known as ' + newAlias;
+      console.log(text);
+      aliases[socket.id] = newAlias;
+      io.emit('chat message', 'Server', text);
+    }
+
+    // Confirm the current alias to the client
+    socket.emit('alias', newAlias);
   });
 
   socket.on('chat message', function(msg){
     var alias = aliases[socket.id];
     console.log('message from ' + alias + ': ' + msg);
-    io.emit('chat message', '[' + alias + ']: '+ msg);
+    io.emit('chat message', alias, msg);
   });
 
   socket.on('disconnect', function(){
