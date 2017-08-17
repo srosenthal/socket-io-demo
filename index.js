@@ -19,9 +19,11 @@ io.on('connection', function(socket){
   var assignedAlias = randomAlias();
   aliases[socket.id] = assignedAlias;
 
+  io.emit('alias list', aliases);
+
   var text = assignedAlias + ' has joined the server';
   console.log(text);
-  io.emit('chat message', 'Server', text);
+  io.emit('chat message', 'Server', 'Server', text);
 
   // Confirm the current alias to the client
   socket.emit('alias', assignedAlias);
@@ -38,7 +40,8 @@ io.on('connection', function(socket){
       var text = oldAlias + ' is now known as ' + newAlias;
       console.log(text);
       aliases[socket.id] = newAlias;
-      io.emit('chat message', 'Server', text);
+      io.emit('chat message', 'Server', 'Server', text);
+      io.emit('alias list', aliases);
     }
 
     // Confirm the current alias to the client
@@ -48,13 +51,18 @@ io.on('connection', function(socket){
   socket.on('chat message', function(msg){
     var alias = aliases[socket.id];
     console.log('[' + alias + ']: ' + msg);
-    io.emit('chat message', alias, msg);
+    io.emit('chat message', socket.id, alias, msg);
   });
 
   socket.on('disconnect', function(){
     var alias = aliases[socket.id];
-    console.log('user disconnected: ' + alias);
+
+    var text = alias + ' has disconnected'
+    console.log(text);
+    io.emit('chat message', 'Server', 'Server', text);
     delete aliases[socket.id];
+
+    io.emit('alias list', aliases);
   });
 });
 

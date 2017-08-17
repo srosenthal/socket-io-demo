@@ -25,9 +25,12 @@
         $('#message').val('');
         return false;
       });
-      socket.on('chat message', function(from, msg){
+      socket.on('chat message', function(id, alias, msg){
         var li = $('<li>');
-        var alias = $('<span>').text('[' + from + ']: ').css('color', 'blue');
+        var alias = $('<span>')
+          .text('[' + alias + ']: ')
+          .css('color', 'blue')
+          .addClass(id);
         var text = $('<span>').text(msg);
         li.append(alias).append(text);
         $('#messages').append(li);
@@ -38,6 +41,15 @@
       });
       socket.on('alias', function(msg){
         $('#nickname').val(msg);
+      });
+
+      socket.on('alias list', function(idToName){
+        // OK, actually it's a map, but whatever...
+        for (var id in idToName) {
+          if (idToName.hasOwnProperty(id)) {
+            $('.' + id).text('[' + idToName[id] + ']: ');
+          }
+        }
       });
     });
   </script>
