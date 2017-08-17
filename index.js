@@ -28,7 +28,9 @@ io.on('connection', function(socket){
 
   socket.on('name change', function(newAlias){
     var oldAlias = aliases[socket.id];
-    if (newAlias === 'Server' || newAlias === oldAlias) {
+    if (newAlias === 'Server' ||
+        newAlias === oldAlias ||
+        newAlias.length > 12) {
       // The name Server is reserved, so users can't use it.
       // We could also prevent users from using the same name as someone else.
       newAlias = oldAlias;
@@ -45,7 +47,7 @@ io.on('connection', function(socket){
 
   socket.on('chat message', function(msg){
     var alias = aliases[socket.id];
-    console.log('message from ' + alias + ': ' + msg);
+    console.log('[' + alias + ']: ' + msg);
     io.emit('chat message', alias, msg);
   });
 
